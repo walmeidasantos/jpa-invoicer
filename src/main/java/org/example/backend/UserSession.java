@@ -33,9 +33,23 @@ public class UserSession implements Serializable {
         final String propertyValue = ConfigResolver.getPropertyValue(
                 "jpa-invoicer.gpluskey");
         // If no Google OAuth API key available, use fake login
-        if (StringUtils.isEmpty(propertyValue)) {
-            demoLogin();
+
+        if (user == null) {
+	        if (StringUtils.isEmpty(propertyValue)) {
+	            demoLogin();
+	        }
+        } else {
+        	
+            try {
+                user = userFacade.findByEmail( user.getEmail() );
+            } catch (Exception e) {
+            }
+            if (user == null) {
+                userFacade.save(user);
+            }
+        	
         }
+        
     }
 
     protected void demoLogin() {
@@ -65,8 +79,10 @@ public class UserSession implements Serializable {
             productFacade.save(product);
 
         }
-    }
+        
 
+   }
+    
     public User getUser() {
         return user;
     }
@@ -80,14 +96,7 @@ public class UserSession implements Serializable {
     }
 
     public void login(String email, String displayName) {
-        try {
-            user = userFacade.findByEmail(email);
-        } catch (Exception e) {
-        }
-        if (user == null) {
-            userFacade.save(new User(email));
-            user = userFacade.findByEmail(email);
-        }
+    	setUser( new User(email) );
     }
 
 }
